@@ -285,8 +285,8 @@
     </div>
     <div class="row2">
       <div>
-        <label for="cWhatsapp">WhatsApp number (with country code)</label>
-        <input type="text" id="cWhatsapp" placeholder="whatsapp:+91XXXXXXXXXX">
+        <label for="cWhatsapp">WhatsApp number (optional, with country code)</label>
+        <input type="text" id="cWhatsapp" placeholder="whatsapp:+91XXXXXXXXXX (leave blank for email-only)">
       </div>
       <div>
         <label for="cKeywords">Keywords (comma-separated)</label>
@@ -632,11 +632,14 @@ async function saveClient(){
   const keywords = document.getElementById("cKeywords").value.trim();
   const profile = document.getElementById("cProfile").value.trim();
 
-  if (!slot || slot < 1 || slot > 10 || !name || !emailVal || !appPass || !whatsapp){
-    statusEl.textContent = "Fill in slot, name, email, app password, and WhatsApp number.";
+  if (!slot || slot < 1 || slot > 10 || !name || !emailVal || !appPass){
+    statusEl.textContent = "Fill in slot, name, email, and app password (WhatsApp is optional).";
     return;
   }
-  let waFormatted = whatsapp.startsWith("whatsapp:") ? whatsapp : `whatsapp:${whatsapp}`;
+  let waFormatted = "";
+  if (whatsapp){
+    waFormatted = whatsapp.startsWith("whatsapp:") ? whatsapp : `whatsapp:${whatsapp}`;
+  }
 
   statusEl.textContent = "Encrypting and saving…";
   try{
@@ -645,7 +648,11 @@ async function saveClient(){
     await setSecret(key_id, key, prefix + "NAME", name);
     await setSecret(key_id, key, prefix + "EMAIL", emailVal);
     await setSecret(key_id, key, prefix + "APP_PASSWORD", appPass);
-    await setSecret(key_id, key, prefix + "WHATSAPP_TO", waFormatted);
+    if (waFormatted){
+      await setSecret(key_id, key, prefix + "WHATSAPP_TO", waFormatted);
+    } else {
+      await deleteSecret(prefix + "WHATSAPP_TO");
+    }
     await setSecret(key_id, key, prefix + "KEYWORDS", keywords);
     await setSecret(key_id, key, prefix + "PROFILE", profile);
     setSlotLabel(slot, name);
