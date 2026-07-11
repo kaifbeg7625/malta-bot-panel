@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Malta Job Bot — Control Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/libsodium-wrappers@0.7.13/dist/browsers/sodium.js"></script>
+<style>
+  :root{
+    --bg:#0A0E14;
+    --panel:#111826;
+    --panel-2:#0D1420;
+    --board:#0A0E14;
+    --amber:#FFB020;
+    --amber-dim:#8a5f14;
+    --green:#3DDC97;
+    --red:#FF5C5C;
+    --text:#E8EDF4;
+    --muted:#7C8AA0;
+    --line:#1E2A3D;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',system-ui,sans-serif;
+    min-height:100vh;
+  }
+  .wrap{max-width:960px;margin:0 auto;padding:28px 20px 80px;}
+
+  /* ---- Departure-board header ---- */
+  .board{
+    background:linear-gradient(180deg,#0F1621,#0A0E14);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:22px 24px;
+    margin-bottom:22px;
+    position:relative;
+    overflow:hidden;
+  }
+  .board::before{
+    content:"";
+    position:absolute; inset:0;
+    background:repeating-linear-gradient(180deg,rgba(255,255,255,0.015) 0px,rgba(255,255,255,0.015) 1px,transparent 1px,transparent 3px);
+    pointer-events:none;
+  }
+  .board-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;}
+  .board-title{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:2.5px;
+    color:var(--amber);
+    text-transform:uppercase;
+    margin:0 0 6px;
+  }
+  .board-sub{font-size:22px;font-weight:600;margin:0;letter-spacing:-0.3px;}
+  .board-status{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    padding:6px 12px;
+    border-radius:5px;
+    letter-spacing:1px;
+    white-space:nowrap;
+  }
+  .st-active{background:rgba(61,220,151,0.12);color:var(--green);border:1px solid rgba(61,220,151,0.3);}
+  .st-off{background:rgba(255,92,92,0.12);color:var(--red);border:1px solid rgba(255,92,92,0.3);}
+  .st-unknown{background:rgba(124,138,160,0.12);color:var(--muted);border:1px solid rgba(124,138,160,0.3);}
+
+  .flap-row{
+    display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .flap{
+    background:var(--board);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:10px 16px;
+    min-width:120px;
+  }
+  .flap-label{font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;}
+  .flap-value{font-size:16px;color:var(--text);font-weight:600;}
+
+  /* ---- Sections ---- */
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:22px 24px;
+    margin-bottom:18px;
+  }
+  .panel h2{
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:1.8px;
+    color:var(--amber);
+    margin:0 0 16px;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+  }
+  label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;}
+  input[type=text],input[type=password],textarea{
+    width:100%;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:10px 12px;
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    margin-bottom:14px;
+  }
+  textarea{min-height:90px;resize:vertical;font-family:'Inter',sans-serif;line-height:1.5;}
+  input:focus,textarea:focus{outline:2px solid var(--amber);outline-offset:1px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:600px){.row2{grid-template-columns:1fr;}}
+
+  button{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    padding:10px 18px;
+    border-radius:6px;
+    border:1px solid transparent;
+    cursor:pointer;
+    transition:transform .08s ease, opacity .15s ease;
+  }
+  button:active{transform:scale(0.97);}
+  button:disabled{opacity:0.5;cursor:not-allowed;}
+  .btn-primary{background:var(--amber);color:#1a1200;}
+  .btn-primary:hover:not(:disabled){opacity:0.9;}
+  .btn-ghost{background:transparent;color:var(--text);border-color:var(--line);}
+  .btn-ghost:hover:not(:disabled){border-color:var(--amber);}
+  .btn-danger{background:rgba(255,92,92,0.12);color:var(--red);border-color:rgba(255,92,92,0.35);}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;}
+
+  /* ---- Runs table ---- */
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{
+    text-align:left;color:var(--muted);font-weight:600;
+    font-family:'IBM Plex Mono',monospace;font-size:11px;
+    letter-spacing:1px;text-transform:uppercase;
+    padding:8px 10px;border-bottom:1px solid var(--line);
+  }
+  td{padding:10px;border-bottom:1px solid var(--line);}
+  .badge{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;padding:3px 9px;border-radius:4px;letter-spacing:0.5px;
+    display:inline-block;
+  }
+  .b-success{background:rgba(61,220,151,0.12);color:var(--green);}
+  .b-failure{background:rgba(255,92,92,0.12);color:var(--red);}
+  .b-progress{background:rgba(255,176,32,0.12);color:var(--amber);}
+  .b-other{background:rgba(124,138,160,0.12);color:var(--muted);}
+
+  /* ---- Keyword tags ---- */
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+  .tag{
+    background:var(--panel-2);border:1px solid var(--line);
+    border-radius:999px;padding:6px 8px 6px 14px;
+    display:flex;align-items:center;gap:8px;font-size:13px;
+  }
+  .tag button{
+    background:none;border:none;color:var(--muted);
+    font-size:14px;line-height:1;padding:2px 6px;border-radius:50%;
+  }
+  .tag button:hover{color:var(--red);background:rgba(255,92,92,0.12);}
+  .add-tag-row{display:flex;gap:8px;}
+  .add-tag-row input{margin-bottom:0;flex:1;}
+
+  .muted-note{font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:10px;}
+  .save-status{font-size:13px;margin-left:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;}
+  .divider{height:1px;background:var(--line);margin:18px 0;}
+  a{color:var(--amber);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="board">
+    <div class="board-top">
+      <div>
+        <p class="board-title">✈ Relocation Ops · Job Alert System</p>
+        <p class="board-sub" id="repoLabel">malta-job-bot</p>
+      </div>
+      <div class="board-status st-unknown" id="workflowStatus">CHECKING…</div>
+    </div>
+    <div class="flap-row">
+      <div class="flap"><div class="flap-label">Last run</div><div class="flap-value" id="lastRunTime">—</div></div>
+      <div class="flap"><div class="flap-label">Last result</div><div class="flap-value" id="lastRunResult">—</div></div>
+      <div class="flap"><div class="flap-label">Checks every</div><div class="flap-value">15 min</div></div>
+      <div class="flap"><div class="flap-label">Window</div><div class="flap-value">24 hrs</div></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Connect</h2>
+    <label for="ghToken">GitHub Personal Access Token</label>
+    <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+    <div class="row2">
+      <div>
+        <label for="ghOwner">Repo owner</label>
+        <input type="text" id="ghOwner" value="kaifbeg7625">
+      </div>
+      <div>
+        <label for="ghRepo">Repo name</label>
+        <input type="text" id="ghRepo" value="malta-job-bot">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="connect()">Connect</button>
+      <span class="save-status" id="connectStatus"></span>
+    </div>
+    <p class="muted-note">Your token is stored only in this browser (localStorage) and sent directly to GitHub's API — it never passes through any other server. Use a token scoped only to this repo where possible.</p>
+  </div>
+
+  <div class="panel" id="controlsPanel" style="display:none;">
+    <h2>Controls</h2>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="runNow()" id="runNowBtn">Run check now</button>
+      <button class="btn-ghost" onclick="loadRuns()">Refresh status</button>
+      <button class="btn-danger" id="toggleBtn" onclick="toggleWorkflow()">Pause bot</button>
+      <span class="save-status" id="controlStatus"></span>
+    </div>
+  </div>
+
+  <div class="panel" id="runsPanel" style="display:none;">
+    <h2>Recent Runs</h2>
+    <table>
+      <thead><tr><th>When</th><th>Trigger</th><th>Result</th></tr></thead>
+      <tbody id="runsBody"></tbody>
+    </table>
+  </div>
+
+  <div class="panel" id="keywordsPanel" style="display:none;">
+    <h2>Keywords — what counts as a match</h2>
+    <div class="tags" id="tagContainer"></div>
+    <div class="add-tag-row">
+      <input type="text" id="newTagInput" placeholder="Add a keyword, e.g. account manager">
+      <button class="btn-ghost" onclick="addTag()">Add</button>
+    </div>
+    <div class="divider"></div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="saveKeywords()">Save keywords</button>
+      <span class="save-status" id="keywordsStatus"></span>
+    </div>
+  </div>
+
+  <div class="panel" id="profilePanel" style="display:none;">
+    <h2>Profile summary — used to draft your application note</h2>
+    <textarea id="profileText"></textarea>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="saveProfile()">Save profile</button>
+      <span class="save-status" id="profileStatus"></span>
+    </div>
+  </div>
+
+  <div class="panel" id="clientsPanel" style="display:none;">
+    <h2>Clients</h2>
+    <p class="muted-note" style="margin-top:0;">Each client gets their own Gmail inbox + WhatsApp number. Slots 1–10 supported. Adding/updating a client writes securely encrypted GitHub Secrets — values are never stored in this panel or visible again after saving.</p>
+    <div id="clientSlotsList" style="margin-bottom:16px;"></div>
+    <div class="divider"></div>
+    <h2 style="margin-top:0;">Add / Update a client</h2>
+    <div class="row2">
+      <div>
+        <label for="cSlot">Slot number (1–10)</label>
+        <input type="text" id="cSlot" placeholder="e.g. 1">
+      </div>
+      <div>
+        <label for="cName">Client name / label</label>
+        <input type="text" id="cName" placeholder="e.g. Amir">
+      </div>
+    </div>
+    <div class="row2">
+      <div>
+        <label for="cEmail">Gmail address</label>
+        <input type="text" id="cEmail" placeholder="client@gmail.com">
+      </div>
+      <div>
+        <label for="cAppPass">Gmail App Password</label>
+        <input type="password" id="cAppPass" placeholder="16-character app password">
+      </div>
+    </div>
+    <div class="row2">
+      <div>
+        <label for="cWhatsapp">WhatsApp number (with country code)</label>
+        <input type="text" id="cWhatsapp" placeholder="whatsapp:+91XXXXXXXXXX">
+      </div>
+      <div>
+        <label for="cKeywords">Keywords (comma-separated)</label>
+        <input type="text" id="cKeywords" placeholder="sales, hospitality, hse">
+      </div>
+    </div>
+    <label for="cProfile">Profile summary (used in draft application notes)</label>
+    <textarea id="cProfile" placeholder="Short summary of this client's background/experience"></textarea>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="saveClient()">Save client</button>
+      <button class="btn-danger" onclick="clearClientSlot()">Clear this slot</button>
+      <span class="save-status" id="clientStatus"></span>
+    </div>
+    <p class="muted-note">Note: each client must also join your Twilio WhatsApp Sandbox once (send "join &lt;your-code&gt;" to your Twilio number from their WhatsApp) before they can receive messages.</p>
+  </div>
+
+</div>
+
+<script>
+let sodiumReady = null;
+async function ensureSodium(){
+  if (!sodiumReady){
+    sodiumReady = sodium.ready.then(() => sodium);
+  }
+  return sodiumReady;
+}
+</script>
+<script>
+const FILE_PATH = "job_alert_bot.py";
+const WORKFLOW_FILE = "job-check.yml";
+let fileSha = null;
+let currentKeywords = [];
+
+function ghHeaders(){
+  return {
+    "Authorization": "token " + localStorage.getItem("gh_token"),
+    "Accept": "application/vnd.github+json"
+  };
+}
+function repoBase(){
+  const owner = localStorage.getItem("gh_owner");
+  const repo = localStorage.getItem("gh_repo");
+  return `https://api.github.com/repos/${owner}/${repo}`;
+}
+
+window.addEventListener("load", () => {
+  const t = localStorage.getItem("gh_token");
+  const o = localStorage.getItem("gh_owner");
+  const r = localStorage.getItem("gh_repo");
+  if (t) document.getElementById("ghToken").value = t;
+  if (o) document.getElementById("ghOwner").value = o;
+  if (r) document.getElementById("ghRepo").value = r;
+  if (t && o && r) connect(true);
+});
+
+async function connect(silent){
+  const token = document.getElementById("ghToken").value.trim();
+  const owner = document.getElementById("ghOwner").value.trim();
+  const repo = document.getElementById("ghRepo").value.trim();
+  if (!token || !owner || !repo){
+    document.getElementById("connectStatus").textContent = "Fill in all three fields.";
+    return;
+  }
+  localStorage.setItem("gh_token", token);
+  localStorage.setItem("gh_owner", owner);
+  localStorage.setItem("gh_repo", repo);
+  document.getElementById("repoLabel").textContent = `${owner}/${repo}`;
+  document.getElementById("connectStatus").textContent = "Connecting…";
+
+  try{
+    const res = await fetch(repoBase(), { headers: ghHeaders() });
+    if (!res.ok) throw new Error("Could not reach repo (check token/owner/repo name)");
+    document.getElementById("connectStatus").textContent = "Connected.";
+    document.getElementById("controlsPanel").style.display = "block";
+    document.getElementById("runsPanel").style.display = "block";
+    document.getElementById("keywordsPanel").style.display = "block";
+    document.getElementById("profilePanel").style.display = "block";
+    document.getElementById("clientsPanel").style.display = "block";
+    renderClientSlots();
+    loadRuns();
+    loadWorkflowState();
+    loadConfig();
+  }catch(e){
+    document.getElementById("connectStatus").textContent = "Error: " + e.message;
+  }
+}
+
+async function loadWorkflowState(){
+  try{
+    const res = await fetch(`${repoBase()}/actions/workflows`, { headers: ghHeaders() });
+    const data = await res.json();
+    const wf = (data.workflows || []).find(w => w.path.endsWith(WORKFLOW_FILE));
+    const statusEl = document.getElementById("workflowStatus");
+    const toggleBtn = document.getElementById("toggleBtn");
+    if (!wf){
+      statusEl.textContent = "NOT FOUND";
+      statusEl.className = "board-status st-unknown";
+      return;
+    }
+    if (wf.state === "active"){
+      statusEl.textContent = "ACTIVE";
+      statusEl.className = "board-status st-active";
+      toggleBtn.textContent = "Pause bot";
+    } else {
+      statusEl.textContent = "PAUSED";
+      statusEl.className = "board-status st-off";
+      toggleBtn.textContent = "Resume bot";
+    }
+    window._workflowId = wf.id;
+  }catch(e){
+    document.getElementById("workflowStatus").textContent = "ERROR";
+  }
+}
+
+async function toggleWorkflow(){
+  const statusEl = document.getElementById("workflowStatus");
+  const isActive = statusEl.textContent === "ACTIVE";
+  const action = isActive ? "disable" : "enable";
+  document.getElementById("controlStatus").textContent = "Working…";
+  try{
+    const res = await fetch(`${repoBase()}/actions/workflows/${window._workflowId}/${action}`, {
+      method: "PUT", headers: ghHeaders()
+    });
+    if (!res.ok) throw new Error("Failed to " + action);
+    document.getElementById("controlStatus").textContent = action === "disable" ? "Bot paused." : "Bot resumed.";
+    loadWorkflowState();
+  }catch(e){
+    document.getElementById("controlStatus").textContent = "Error: " + e.message;
+  }
+}
+
+async function runNow(){
+  document.getElementById("runNowBtn").disabled = true;
+  document.getElementById("controlStatus").textContent = "Triggering…";
+  try{
+    const res = await fetch(`${repoBase()}/actions/workflows/${WORKFLOW_FILE}/dispatches`, {
+      method: "POST", headers: ghHeaders(),
+      body: JSON.stringify({ ref: "main" })
+    });
+    if (!res.ok) throw new Error("Could not trigger run");
+    document.getElementById("controlStatus").textContent = "Triggered — check back in ~30 seconds.";
+    setTimeout(loadRuns, 8000);
+  }catch(e){
+    document.getElementById("controlStatus").textContent = "Error: " + e.message;
+  }
+  document.getElementById("runNowBtn").disabled = false;
+}
+
+async function loadRuns(){
+  try{
+    const res = await fetch(`${repoBase()}/actions/runs?per_page=8`, { headers: ghHeaders() });
+    const data = await res.json();
+    const runs = data.workflow_runs || [];
+    const tbody = document.getElementById("runsBody");
+    tbody.innerHTML = "";
+    runs.forEach(run => {
+      const when = new Date(run.created_at).toLocaleString();
+      const badgeClass = run.status !== "completed" ? "b-progress"
+                        : run.conclusion === "success" ? "b-success"
+                        : run.conclusion === "failure" ? "b-failure" : "b-other";
+      const label = run.status !== "completed" ? "RUNNING" : (run.conclusion || run.status).toUpperCase();
+      tbody.innerHTML += `<tr>
+        <td>${when}</td>
+        <td>${run.event === "workflow_dispatch" ? "Manual" : "Scheduled"}</td>
+        <td><span class="badge ${badgeClass}">${label}</span></td>
+      </tr>`;
+    });
+    if (runs.length){
+      const latest = runs[0];
+      document.getElementById("lastRunTime").textContent = new Date(latest.created_at).toLocaleTimeString();
+      document.getElementById("lastRunResult").textContent = latest.status !== "completed" ? "Running…" : (latest.conclusion || "—").toUpperCase();
+    }
+  }catch(e){
+    document.getElementById("controlStatus").textContent = "Error loading runs: " + e.message;
+  }
+}
+
+async function loadConfig(){
+  try{
+    const res = await fetch(`${repoBase()}/contents/${FILE_PATH}`, { headers: ghHeaders() });
+    const data = await res.json();
+    fileSha = data.sha;
+    const content = decodeURIComponent(escape(atob(data.content)));
+
+    const kwMatch = content.match(/TARGET_KEYWORDS = \[([\s\S]*?)\]/);
+    currentKeywords = kwMatch ? [...kwMatch[1].matchAll(/"([^"]+)"/g)].map(m => m[1]) : [];
+    renderTags();
+
+    const psMatch = content.match(/PROFILE_SUMMARY = \(([\s\S]*?)\)\n/);
+    const profileText = psMatch ? [...psMatch[1].matchAll(/"([^"]*)"/g)].map(m => m[1]).join("") : "";
+    document.getElementById("profileText").value = profileText;
+  }catch(e){
+    document.getElementById("keywordsStatus").textContent = "Error loading config: " + e.message;
+  }
+}
+
+function renderTags(){
+  const container = document.getElementById("tagContainer");
+  container.innerHTML = "";
+  currentKeywords.forEach((kw, i) => {
+    const el = document.createElement("div");
+    el.className = "tag";
+    el.innerHTML = `<span>${kw}</span><button onclick="removeTag(${i})">×</button>`;
+    container.appendChild(el);
+  });
+}
+function addTag(){
+  const input = document.getElementById("newTagInput");
+  const val = input.value.trim().toLowerCase();
+  if (val && !currentKeywords.includes(val)){
+    currentKeywords.push(val);
+    renderTags();
+  }
+  input.value = "";
+}
+function removeTag(i){
+  currentKeywords.splice(i, 1);
+  renderTags();
+}
+
+function buildKeywordsBlock(keywords){
+  const quoted = keywords.map(k => `"${k}"`);
+  let lines = [];
+  for (let i = 0; i < quoted.length; i += 3){
+    lines.push("    " + quoted.slice(i, i+3).join(", ") + ",");
+  }
+  return "TARGET_KEYWORDS = [\n" + lines.join("\n") + "\n]";
+}
+
+async function saveKeywords(){
+  document.getElementById("keywordsStatus").textContent = "Saving…";
+  try{
+    const getRes = await fetch(`${repoBase()}/contents/${FILE_PATH}`, { headers: ghHeaders() });
+    const fileData = await getRes.json();
+    const content = decodeURIComponent(escape(atob(fileData.content)));
+    const newBlock = buildKeywordsBlock(currentKeywords);
+    const updated = content.replace(/TARGET_KEYWORDS = \[[\s\S]*?\]/, newBlock);
+    await putFile(updated, fileData.sha, "Update keywords via control panel");
+    document.getElementById("keywordsStatus").textContent = "Saved. Takes effect on next run.";
+  }catch(e){
+    document.getElementById("keywordsStatus").textContent = "Error: " + e.message;
+  }
+}
+
+async function saveProfile(){
+  document.getElementById("profileStatus").textContent = "Saving…";
+  try{
+    const getRes = await fetch(`${repoBase()}/contents/${FILE_PATH}`, { headers: ghHeaders() });
+    const fileData = await getRes.json();
+    const content = decodeURIComponent(escape(atob(fileData.content)));
+    const newText = document.getElementById("profileText").value.replace(/"/g, "'");
+    const newBlock = `PROFILE_SUMMARY = (\n    "${newText}"\n)\n`;
+    const updated = content.replace(/PROFILE_SUMMARY = \([\s\S]*?\)\n/, newBlock);
+    await putFile(updated, fileData.sha, "Update profile summary via control panel");
+    document.getElementById("profileStatus").textContent = "Saved. Takes effect on next run.";
+  }catch(e){
+    document.getElementById("profileStatus").textContent = "Error: " + e.message;
+  }
+}
+
+async function putFile(newContent, sha, message){
+  const encoded = btoa(unescape(encodeURIComponent(newContent)));
+  const res = await fetch(`${repoBase()}/contents/${FILE_PATH}`, {
+    method: "PUT",
+    headers: ghHeaders(),
+    body: JSON.stringify({ message, content: encoded, sha })
+  });
+  if (!res.ok){
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Save failed");
+  }
+}
+
+// ============================================================
+// Client management (writes GitHub Secrets directly, encrypted client-side)
+// ============================================================
+
+function getSlotLabels(){
+  try{ return JSON.parse(localStorage.getItem("client_slot_labels") || "{}"); }catch(e){ return {}; }
+}
+function setSlotLabel(slot, name){
+  const labels = getSlotLabels();
+  labels[slot] = name;
+  localStorage.setItem("client_slot_labels", JSON.stringify(labels));
+}
+function clearSlotLabel(slot){
+  const labels = getSlotLabels();
+  delete labels[slot];
+  localStorage.setItem("client_slot_labels", JSON.stringify(labels));
+}
+
+async function encryptForGitHub(publicKeyBase64, plaintext){
+  const s = await ensureSodium();
+  const binPub = s.from_base64(publicKeyBase64, s.base64_variants.ORIGINAL);
+  const binMsg = s.from_string(plaintext);
+  const encBytes = s.crypto_box_seal(binMsg, binPub);
+  return s.to_base64(encBytes, s.base64_variants.ORIGINAL);
+}
+
+async function getPublicKey(){
+  const res = await fetch(`${repoBase()}/actions/secrets/public-key`, { headers: ghHeaders() });
+  if (!res.ok) throw new Error("Could not fetch repo public key");
+  return res.json();
+}
+
+async function setSecret(keyId, publicKey, name, value){
+  const encrypted = await encryptForGitHub(publicKey, value);
+  const res = await fetch(`${repoBase()}/actions/secrets/${name}`, {
+    method: "PUT",
+    headers: ghHeaders(),
+    body: JSON.stringify({ encrypted_value: encrypted, key_id: keyId })
+  });
+  if (!res.ok){
+    const err = await res.json().catch(() => ({}));
+    throw new Error(`${name}: ` + (err.message || "failed"));
+  }
+}
+
+async function deleteSecret(name){
+  await fetch(`${repoBase()}/actions/secrets/${name}`, { method: "DELETE", headers: ghHeaders() });
+}
+
+function renderClientSlots(){
+  const labels = getSlotLabels();
+  const container = document.getElementById("clientSlotsList");
+  let html = "";
+  for (let i = 1; i <= 10; i++){
+    const label = labels[i];
+    html += `<div class="tag" style="margin-bottom:8px;display:inline-flex;">
+      <span>Slot ${i}: ${label ? label : "<empty>"}</span>
+    </div> `;
+  }
+  container.innerHTML = html;
+}
+
+async function saveClient(){
+  const statusEl = document.getElementById("clientStatus");
+  const slot = document.getElementById("cSlot").value.trim();
+  const name = document.getElementById("cName").value.trim();
+  const emailVal = document.getElementById("cEmail").value.trim();
+  const appPass = document.getElementById("cAppPass").value.trim();
+  const whatsapp = document.getElementById("cWhatsapp").value.trim();
+  const keywords = document.getElementById("cKeywords").value.trim();
+  const profile = document.getElementById("cProfile").value.trim();
+
+  if (!slot || slot < 1 || slot > 10 || !name || !emailVal || !appPass || !whatsapp){
+    statusEl.textContent = "Fill in slot, name, email, app password, and WhatsApp number.";
+    return;
+  }
+  let waFormatted = whatsapp.startsWith("whatsapp:") ? whatsapp : `whatsapp:${whatsapp}`;
+
+  statusEl.textContent = "Encrypting and saving…";
+  try{
+    const { key_id, key } = await getPublicKey();
+    const prefix = `CLIENT_${slot}_`;
+    await setSecret(key_id, key, prefix + "NAME", name);
+    await setSecret(key_id, key, prefix + "EMAIL", emailVal);
+    await setSecret(key_id, key, prefix + "APP_PASSWORD", appPass);
+    await setSecret(key_id, key, prefix + "WHATSAPP_TO", waFormatted);
+    await setSecret(key_id, key, prefix + "KEYWORDS", keywords);
+    await setSecret(key_id, key, prefix + "PROFILE", profile);
+    setSlotLabel(slot, name);
+    renderClientSlots();
+    statusEl.textContent = `Saved client "${name}" to slot ${slot}.`;
+  }catch(e){
+    statusEl.textContent = "Error: " + e.message;
+  }
+}
+
+async function clearClientSlot(){
+  const statusEl = document.getElementById("clientStatus");
+  const slot = document.getElementById("cSlot").value.trim();
+  if (!slot || slot < 1 || slot > 10){
+    statusEl.textContent = "Enter a slot number (1-10) to clear.";
+    return;
+  }
+  statusEl.textContent = "Clearing…";
+  const prefix = `CLIENT_${slot}_`;
+  try{
+    for (const field of ["NAME","EMAIL","APP_PASSWORD","WHATSAPP_TO","KEYWORDS","PROFILE"]){
+      await deleteSecret(prefix + field);
+    }
+    clearSlotLabel(slot);
+    renderClientSlots();
+    statusEl.textContent = `Slot ${slot} cleared.`;
+  }catch(e){
+    statusEl.textContent = "Error: " + e.message;
+  }
+}
+
+</script>
+</body>
+</html>
