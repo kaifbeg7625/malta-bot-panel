@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job Alert Setup — What I Need From You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAF7F2;
+    --card:#FFFFFF;
+    --ink:#1C1B19;
+    --ink-soft:#5B5750;
+    --accent:#1F6F5C;
+    --accent-soft:#E6F0EC;
+    --line:#E7E1D6;
+    --warn-bg:#FFF6E9;
+    --warn-line:#F0DBA8;
+    --warn-ink:#7A5C10;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    line-height:1.6;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:60px 22px 90px;}
+
+  .eyebrow{
+    font-size:13px;letter-spacing:2px;text-transform:uppercase;
+    color:var(--accent);font-weight:600;margin-bottom:14px;
+  }
+  h1{
+    font-family:'Fraunces',serif;
+    font-size:38px;font-weight:600;line-height:1.15;
+    margin:0 0 16px;letter-spacing:-0.5px;
+  }
+  .lede{font-size:17px;color:var(--ink-soft);max-width:600px;margin:0 0 40px;}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:28px 30px;
+    margin-bottom:22px;
+  }
+  .card h2{
+    font-family:'Fraunces',serif;
+    font-size:21px;font-weight:600;margin:0 0 6px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .card .num{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:28px;height:28px;border-radius:50%;
+    background:var(--accent);color:white;
+    font-family:'Inter';font-size:14px;font-weight:700;flex-shrink:0;
+  }
+  .card p{color:var(--ink-soft);margin:8px 0 0;font-size:15px;}
+  .card p:first-of-type{margin-top:10px;}
+
+  .checklist{list-style:none;margin:18px 0 0;padding:0;}
+  .checklist li{
+    display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line);
+    font-size:15px;
+  }
+  .checklist li:first-child{border-top:none;}
+  .checklist .icon{color:var(--accent);font-size:16px;flex-shrink:0;margin-top:1px;}
+  .checklist b{font-weight:600;}
+  .checklist .sub{color:var(--ink-soft);font-size:13.5px;display:block;margin-top:2px;}
+
+  ol.steps{margin:16px 0 0;padding-left:22px;}
+  ol.steps li{margin-bottom:12px;font-size:15px;}
+  ol.steps a{color:var(--accent);}
+
+  .warn{
+    background:var(--warn-bg);
+    border:1px solid var(--warn-line);
+    color:var(--warn-ink);
+    border-radius:10px;
+    padding:16px 18px;
+    font-size:14px;
+    margin-top:16px;
+  }
+  .warn b{display:block;margin-bottom:4px;}
+
+  .template-box{
+    background:#F4F1EA;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:18px 20px;
+    font-family:'Inter',monospace;
+    font-size:13.5px;
+    color:var(--ink);
+    white-space:pre-wrap;
+    line-height:1.7;
+    margin-top:14px;
+    position:relative;
+  }
+  .copy-btn{
+    margin-top:12px;
+    background:var(--accent);
+    color:white;
+    border:none;
+    padding:10px 18px;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    font-family:'Inter';
+  }
+  .copy-btn:hover{opacity:0.9;}
+  .copy-status{font-size:13px;color:var(--accent);margin-left:10px;}
+
+  .cta{
+    text-align:center;
+    margin-top:44px;
+    padding:34px 24px;
+    background:var(--accent);
+    border-radius:16px;
+    color:white;
+  }
+  .cta h2{font-family:'Fraunces',serif;font-size:24px;margin:0 0 10px;font-weight:600;}
+  .cta p{color:#DCEDE7;margin:0 0 20px;font-size:15px;}
+  .cta-btn{
+    display:inline-block;
+    background:white;
+    color:var(--accent);
+    padding:13px 26px;
+    border-radius:8px;
+    font-weight:700;
+    text-decoration:none;
+    font-size:15px;
+  }
+
+  .privacy-note{
+    display:flex;gap:10px;align-items:flex-start;
+    font-size:13.5px;color:var(--ink-soft);
+    margin-top:36px;padding-top:24px;border-top:1px solid var(--line);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="eyebrow">Job Alert Setup</p>
+  <h1>Never miss a matching job again.</h1>
+  <p class="lede">This service watches job websites for you. The moment a job matches what you're looking for, you get a message with the job link — so you can be one of the first to apply. Choose a plan below, then follow 3 simple steps.</p>
+
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;">
+      <div style="padding:28px 26px;border-right:1px solid var(--line);">
+        <p class="eyebrow" style="margin-bottom:8px;">Plan 1</p>
+        <h2 style="margin-bottom:4px;">Email Alerts</h2>
+        <p style="font-size:32px;font-weight:700;color:var(--accent);margin:10px 0;font-family:'Fraunces',serif;">₹2,999</p>
+        <p style="margin-top:0;">One-time setup.</p>
+        <ul class="checklist" style="margin-top:14px;">
+          <li><span class="icon">✓</span><div>Job matches sent straight to your email, the moment they're posted</div></li>
+          <li><span class="icon">✓</span><div>Ready-to-copy application note with every job</div></li>
+          <li><span class="icon">✓</span><div>Checked every 15 minutes, all day, every day</div></li>
+        </ul>
+      </div>
+      <div style="padding:28px 26px;background:var(--accent-soft);">
+        <p class="eyebrow" style="margin-bottom:8px;">Plan 2</p>
+        <h2 style="margin-bottom:4px;">Email + WhatsApp Alerts</h2>
+        <p style="font-size:32px;font-weight:700;color:var(--accent);margin:10px 0;font-family:'Fraunces',serif;">₹4,999</p>
+        <p style="margin-top:0;">One-time setup.</p>
+        <ul class="checklist" style="margin-top:14px;">
+          <li><span class="icon">✓</span><div>Everything in Plan 1</div></li>
+          <li><span class="icon">✓</span><div><b>Plus:</b> the same alert sent to your WhatsApp instantly</div></li>
+          <li><span class="icon">✓</span><div>You'll see it the second it arrives — most people check WhatsApp far more often than email</div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-bottom:10px;">Why WhatsApp is worth it</h2>
+    <p style="margin-top:0;">Email alerts work, but most of us don't check email all day. Jobs get filled fast — sometimes within hours of being posted. With WhatsApp turned on, the alert lands like any other WhatsApp message, so you notice it right away and can apply before too many other people do.</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">1</span>What I need from you</h2>
+    <p style="margin-top:0;">Just these 5 things. Nothing technical — I'll explain each one below.</p>
+    <ul class="checklist">
+      <li>
+        <span class="icon">●</span>
+        <div><b>Your Gmail address</b>
+          <span class="sub">The email where job alerts already come, or will come.</span>
+        </div>
+      </li>
+      <li>
+        <span class="icon">●</span>
+        <div><b>A Gmail "App Password"</b>
+          <span class="sub">This is NOT your normal Gmail password. It's a special code just for this. I'll show you exactly how to get it — takes 2 minutes.</span>
+        </div>
+      </li>
+      <li>
+        <span class="icon">●</span>
+        <div><b>Your WhatsApp number</b>
+          <span class="sub">Only needed if you picked Plan 2. Skip this if you picked Plan 1 (email only).</span>
+        </div>
+      </li>
+      <li>
+        <span class="icon">●</span>
+        <div><b>What kind of jobs you want</b>
+          <span class="sub">Just type the job types in simple words. Example: "sales, hospitality, digital marketing"</span>
+        </div>
+      </li>
+      <li>
+        <span class="icon">●</span>
+        <div><b>A few lines about yourself</b>
+          <span class="sub">2-3 sentences about your work experience. This is used to write your application note automatically.</span>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">2</span>How to get your Gmail App Password</h2>
+    <p>Takes 2 minutes. Just follow these clicks.</p>
+    <ol class="steps">
+      <li>Open this link: <a href="https://myaccount.google.com/security" target="_blank">myaccount.google.com/security</a></li>
+      <li>Find <b>"2-Step Verification"</b> and turn it ON (skip if it's already on).</li>
+      <li>Now open this link: <a href="https://myaccount.google.com/apppasswords" target="_blank">myaccount.google.com/apppasswords</a></li>
+      <li>Type any name, like "Job Alerts", then click <b>Create</b>.</li>
+      <li>Google will show you a code with 16 letters. <b>Copy this code</b> — this is your App Password.</li>
+    </ol>
+    <div class="warn">
+      <b>Is this safe?</b>
+      Yes. This code only lets the system check for new job emails — nothing else. It cannot see your other emails, cannot post anything, cannot access your bank or personal info. You can cancel it anytime from the same page.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">3</span>Turn on job alerts</h2>
+    <p>If you haven't already: go to LinkedIn or Indeed, search for the job you want, and look for a bell icon 🔔 or a button that says "Get alerts" or "Set alert". Turn it on. This is what sends the emails that this system watches for.</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">4</span>Send me your details</h2>
+    <p>Copy the box below, fill in your answers, and send it to me on WhatsApp. That's it — I'll do the rest.</p>
+    <div class="template-box" id="templateBox">Name: 
+Plan (Email only / Email + WhatsApp): 
+Gmail address: 
+Gmail App Password: 
+WhatsApp number (skip if Email only plan): 
+Job types I want (example: sales, hospitality): 
+A few lines about my work experience: </div>
+    <button class="copy-btn" onclick="copyTemplate()">Copy template</button>
+    <span class="copy-status" id="copyStatus"></span>
+    <div class="warn">
+      <b>One safety tip</b>
+      Please send these details only to me directly on WhatsApp. Don't post this anywhere public like Facebook, Instagram comments, or group chats.
+    </div>
+  </div>
+
+  <div class="cta">
+    <h2>Ready?</h2>
+    <p>Pick your plan, follow the steps above, then send me your details on WhatsApp.</p>
+    <a class="cta-btn" href="https://wa.me/917497937625" target="_blank">Message me on WhatsApp</a>
+  </div>
+
+  <div class="privacy-note">
+    <span>🔒</span>
+    <span>Your details are locked and encrypted once I save them — after that, even I can't see them again. They're only used to check your inbox and send you job alerts.</span>
+  </div>
+
+</div>
+
+<script>
+function copyTemplate(){
+  const text = document.getElementById("templateBox").innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    document.getElementById("copyStatus").textContent = "Copied!";
+    setTimeout(() => document.getElementById("copyStatus").textContent = "", 2000);
+  });
+}
+</script>
+</body>
+</html>
